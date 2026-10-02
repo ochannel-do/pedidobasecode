@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: pedidobasecode-dev
+resources:
+  - ../../base
+configMapGenerator:
+  - name: pedidobasecode-config
+    literals:
+      - DB_URL=jdbc:postgresql://postgresql.databases-dev.svc.cluster.local:5432/pedidobasecode_dev
+      - MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED=true
+      - MANAGEMENT_ENDPOINT_HEALTH_GROUP_READINESS_INCLUDE=readinessState,db
+images:
+  - name: ghcr.io/ochannel-do/pedidobasecode
+    newTag: bootstrap
