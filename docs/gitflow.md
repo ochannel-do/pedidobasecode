@@ -35,7 +35,7 @@ Documentação e CI não exigem teste de negócio artificial. Mudanças no valid
 
 Checks para tornar obrigatórios: `gitflow`, `policy-tests`, `verify` e `security`. O workflow de publicação aguarda testes/segurança e atualiza apenas dev/prod conforme a branch. Sem proteção de branches, GitHub ainda permite bypass manual: a API informou que este repositório privado precisa de GitHub Pro para configurar a proteção.
 
-Cobertura atual: 50,32% (78/155 linhas), mínimo 90%; publicação permanece bloqueada. Não reduzir a meta nem excluir código apenas para liberar o deploy.
+Cobertura verificada com Java 25 após a ampliação dos testes: 92,26% (143/155 linhas), acima do mínimo de 90%; ramos de decisão: 90,48% (38/42). Os 34 testes unitários/arquitetura/HTTP e 6 de integração passaram. Não reduzir a meta nem excluir código apenas para liberar o deploy.
 
 ## Kanban
 
