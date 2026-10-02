@@ -2,7 +2,7 @@
 
 ## Fluxo
 
-PRs para `develop` e `master`: testes Java 25, cobertura unitária mínima de 90%, Gitleaks para segredos e Trivy para manifests (as dependências são analisadas na imagem construída). `Verify / verify` e `Verify / security` devem ser checks obrigatórios das duas branches, sem bypass.
+PRs para `develop` e `master`: rotas GitFlow, sequência test → feat/fix, testes Java 25, cobertura unitária mínima de 90%, Gitleaks para segredos e Trivy para manifests (as dependências são analisadas na imagem construída). Checks `gitflow`, `policy-tests`, `verify` e `security` devem ser obrigatórios das duas branches, sem bypass. Ver `docs/gitflow.md` para releases e hotfixes.
 
 Push em `develop` ou `master`: repete as verificações, constrói a imagem, analisa a imagem, publica no GHCR e atualiza somente o overlay correspondente na branch `deploy`, usando digest imutável. Argo CD acompanha essa branch. A branch `deploy` deve permitir escrita pelo `GITHUB_TOKEN`; as branches de código continuam protegidas. Não editar os manifests diretamente em `deploy` durante uma publicação; alterações estruturais devem ser incorporadas a essa branch antes da próxima atualização.
 

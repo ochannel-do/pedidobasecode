@@ -4,10 +4,30 @@ on:
   pull_request:
     branches: [develop, master]
   push:
-    branches: [develop, master]
+    branches: ['feature/**', 'release/**', 'hotfix/**']
 permissions:
   contents: read
 jobs:
+  gitflow:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - name: Validar destino e sequência TDD do PR
+        env:
+          SOURCE_BRANCH: ${{ github.head_ref }}
+          TARGET_BRANCH: ${{ github.base_ref }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: python3 scripts/gitflow_policy.py --source "$SOURCE_BRANCH" --target "$TARGET_BRANCH" --base "$BASE_SHA" --head "$HEAD_SHA"
+  policy-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - run: python3 -m unittest discover -s scripts/tests -v
   verify:
     runs-on: ubuntu-latest
     steps:

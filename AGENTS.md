@@ -1,5 +1,9 @@
 # Orientação para alterações
 
+- Fluxo de trabalho: seguir `docs/gitflow.md`. Features partem de `develop`; releases promovem para `master`; hotfixes partem de `master` e voltam também a `develop`.
+- Para comportamento novo/correção, primeiro commit `test:` com cenário que falha pelo motivo esperado, depois `feat:`/`fix:` com implementação e testes passando. Registrar comandos/resultados RED e GREEN no PR. Preservar os commits usando merge commit, sem squash.
+- Vincular branch e PR à issue do Kanban e usar o tipo correspondente: Feature, Bug, Refactor, Test, CI/CD ou Docs.
+
 - Use Java 25 sem preview. Build: `./mvnw verify`; formatar: `./mvnw spotless:apply`.
 - Preserve `core.domain` e `core.application` livres de frameworks e infraestrutura. Domínio não depende de application.
 - Portas de entrada e seus records são contratos públicos. HTTP, JPA e tracing ficam em infraestrutura.
