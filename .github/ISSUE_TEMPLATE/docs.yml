@@ -1,0 +1,26 @@
+name: Docs
+description: Documentação e decisões
+title: "[Docs] "
+labels: ["type:docs"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema e resultado esperado
+      description: Contexto, comportamento atual e resultado desejado.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Critérios de aceite
+      description: Cenários verificáveis para considerar o trabalho concluído.
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Plano de validação
+      description: Testes RED/GREEN, cobertura, checks ou validação de documentação/infraestrutura aplicáveis.
+    validations:
+      required: true

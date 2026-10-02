@@ -1,0 +1,92 @@
+name: Build and deploy
+on:
+  push:
+    branches: [develop, master]
+permissions:
+  contents: read
+concurrency:
+  group: homelab-deployment
+  cancel-in-progress: false
+jobs:
+  checks:
+    uses: ./.github/workflows/verify.yaml
+  publish:
+    needs: checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      digest: ${{ steps.image.outputs.digest }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f
+      - name: Construir imagem para análise
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8
+        with:
+          context: .
+          load: true
+          tags: ghcr.io/ochannel-do/pedidobasecode:sha-${{ github.sha }}
+      - name: Analisar imagem antes de publicar
+        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8
+        with:
+          version: v0.75.0
+          image-ref: ghcr.io/ochannel-do/pedidobasecode:sha-${{ github.sha }}
+          scanners: vuln,secret
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publicar a imagem analisada
+        id: image
+        env:
+          IMAGE: ghcr.io/ochannel-do/pedidobasecode:sha-${{ github.sha }}
+        run: |
+          docker push "$IMAGE"
+          DIGEST=$(docker image inspect "$IMAGE" --format '{{index .RepoDigests 0}}')
+          echo "digest=${DIGEST#*@}" >> "$GITHUB_OUTPUT"
+  update-manifest:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: deploy
+          fetch-depth: 0
+      - name: Atualizar ambiente com digest imutável
+        env:
+          SOURCE_BRANCH: ${{ github.ref_name }}
+          SOURCE_SHA: ${{ github.sha }}
+          DIGEST: ${{ needs.publish.outputs.digest }}
+        run: |
+          # Impede um build antigo de substituir um commit mais recente.
+          CURRENT=$(git ls-remote origin "refs/heads/$SOURCE_BRANCH" | cut -f1)
+          if [ "$CURRENT" != "$SOURCE_SHA" ]; then
+            echo 'Há um commit mais recente; não atualizar o ambiente.'
+            exit 0
+          fi
+          python3 - <<'PY'
+          import os, re
+          from pathlib import Path
+          env = {'develop': 'dev', 'master': 'prod'}[os.environ['SOURCE_BRANCH']]
+          digest = os.environ['DIGEST']
+          if not re.fullmatch(r'sha256:[0-9a-f]{64}', digest):
+              raise SystemExit('Digest inválido')
+          p = Path(f'k8s/overlays/{env}/kustomization.yaml')
+          text, count = re.subn(r'(?m)^    (?:newTag|digest): .+$', f'    digest: {digest}', p.read_text())
+          if count != 1:
+              raise SystemExit('Referência de imagem ausente ou ambígua')
+          p.write_text(text)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add k8s/overlays
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "deploy: $SOURCE_BRANCH $SOURCE_SHA"
+          git push origin HEAD:deploy
