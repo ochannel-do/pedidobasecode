@@ -11,6 +11,40 @@ import org.junit.jupiter.api.Test;
 
 class CriarPedidoServiceTest {
   @Test
+  void entradasInvalidasNaoReservamNemPersistem() {
+    var repo = mock(PedidoRepository.class);
+    var estoque = mock(ReservarEstoque.class);
+    var service = new CriarPedidoService(repo, estoque);
+    assertThatThrownBy(() -> service.executar(null)).isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> service.executar(new Comando(null)))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> service.executar(new Comando(List.of())))
+        .isInstanceOf(IllegalArgumentException.class);
+    var produto = UUID.randomUUID();
+    assertThatThrownBy(
+            () ->
+                service.executar(new Comando(List.of(new Item(produto, 1), new Item(produto, 2)))))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> service.executar(new Comando(List.of(new Item(produto, 0)))))
+        .isInstanceOf(IllegalArgumentException.class);
+    verifyNoInteractions(estoque, repo);
+  }
+
+  @Test
+  void comandoRejeitaItemNuloECopiaListaRecebida() {
+    assertThatThrownBy(() -> new Comando(Arrays.asList((Item) null)))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Item obrigatório");
+    var item = new Item(UUID.randomUUID(), 2);
+    var origem = new ArrayList<>(List.of(item));
+    var comando = new Comando(origem);
+    origem.clear();
+    assertThat(comando.itens()).containsExactly(item);
+    assertThatThrownBy(() -> comando.itens().clear())
+        .isInstanceOf(UnsupportedOperationException.class);
+  }
+
+  @Test
   void reservaAntesDePersistir() {
     var repo = mock(PedidoRepository.class);
     var estoque = mock(ReservarEstoque.class);
