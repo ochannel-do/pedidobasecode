@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: pedidobasecode-hml
+resources:
+  - ../../base
+configMapGenerator:
+  - name: pedidobasecode-config
+    literals:
+      - DB_URL=jdbc:postgresql://postgresql.databases-hml.svc.cluster.local:5432/pedidobasecode_hml
+      - MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED=true
+      - MANAGEMENT_ENDPOINT_HEALTH_GROUP_READINESS_INCLUDE=readinessState,db
+images:
+  - name: ghcr.io/ochannel-do/pedidobasecode
+    digest: sha256:5acbcbd2037305837afdb2d8439c34af542a42747b2b6a5fdc057c6d2b6db0b4
