@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: pedidobasecode-hml
+  namespace: argocd
+spec:
+  sourceRepos:
+    - https://github.com/ochannel-do/pedidobasecode.git
+  destinations:
+    - namespace: pedidobasecode-hml
+      server: https://kubernetes.default.svc
+  namespaceResourceWhitelist:
+    - group: apps
+      kind: Deployment
+    - group: ''
+      kind: Service
+    - group: ''
+      kind: ConfigMap
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pedidobasecode-hml
+  namespace: argocd
+spec:
+  project: pedidobasecode-hml
+  source:
+    repoURL: https://github.com/ochannel-do/pedidobasecode.git
+    targetRevision: deploy
+    path: k8s/overlays/hml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: pedidobasecode-hml
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+    syncOptions:
+      - Prune=false
