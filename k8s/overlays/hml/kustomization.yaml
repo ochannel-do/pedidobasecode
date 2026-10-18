@@ -11,4 +11,4 @@ configMapGenerator:
       - MANAGEMENT_ENDPOINT_HEALTH_GROUP_READINESS_INCLUDE=readinessState,db
 images:
   - name: ghcr.io/ochannel-do/pedidobasecode
-    digest: sha256:5acbcbd2037305837afdb2d8439c34af542a42747b2b6a5fdc057c6d2b6db0b4
+    digest: sha256:9dec6d2d8bd7e8cb99af33f04865bfb81462551670a6ae0e8d1d8467b9f04715
