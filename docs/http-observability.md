@@ -27,6 +27,11 @@ investigação e os testes locais não consultaram o cluster nem o Grafana.
 O filtro de infraestrutura executa dentro do escopo de `ServerHttpObservationFilter`
 (ordem HIGHEST_PRECEDENCE + 1 no Boot 4.1.1; filtro de logs + 2). Em `finally`,
 depois da resolução das exceções pelo MVC, emite um INFO `http_request_completed`.
+Chamadas a `/actuator/health` e seus subcaminhos (incluindo liveness/readiness)
+não passam por esse filtro de logs, para evitar ruído das probes do Kubernetes.
+A exclusão respeita o context path e o limite do segmento: `/actuator/healthcheck`
+continua sendo registrado. O health check e a instrumentação do Spring continuam
+executando normalmente; a exclusão vale para qualquer status desses endpoints.
 O handler apenas anota o código de negócio em atributo da requisição. Assim há
 um evento de conclusão por conflito, sem log adicional de exceção ou stack trace.
 O contrato ProblemDetail permanece igual; a resposta ganha `X-Correlation-Id`.

@@ -1,5 +1,11 @@
 # Validação da implementação
 
+## Exclusão de probes dos logs HTTP — 2026-10-18
+
+- RED: `./mvnw spotless:apply test -Dtest=HttpRequestLoggingFilterTest` falhou no novo cenário porque as quatro chamadas de health ainda emitiam eventos de conclusão.
+- GREEN: `./mvnw spotless:apply clean verify` aprovou os testes Surefire, Spotless e os limites de cobertura. O novo cenário confirma a exclusão de health/liveness/readiness, inclusive com context path, preservando a execução da cadeia HTTP e os logs de `/pedidos` e `/actuator/healthcheck`.
+- A fase de integração continua impedida pela indisponibilidade do Docker/Testcontainers; nenhum deploy ou push foi realizado.
+
 ## Observabilidade HTTP — 2026-10-18
 
 - JDK Temurin 25 sem preview, obtido para validação local; versão Java do projeto preservada.
