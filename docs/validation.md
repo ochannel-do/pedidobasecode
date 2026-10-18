@@ -1,5 +1,17 @@
 # Validação da implementação
 
+## Observabilidade HTTP — 2026-10-18
+
+- JDK Temurin 25 sem preview, obtido para validação local; versão Java do projeto preservada.
+- `./mvnw spotless:apply` e verificação de formato aprovadas.
+- `./mvnw verify`: os 18 testes da fase Surefire passaram; os seis cenários de `PedidoFlowIT` falharam na criação do contexto porque o daemon Docker está indisponível. Integração PostgreSQL/Testcontainers permanece pendente, sem substituição por H2 ou skip silencioso.
+- Tomcat real de teste, sem banco e com a porta de negócio mockada: cinco POST retornaram 409 com ProblemDetail preservado e cinco eventos JSON de conclusão, sem stack trace. Verificados status, método, caminho, duração, código de negócio, header de correlação e MDC.
+- Propagação de traceparent W3C e logs correlacionados validadas com sampling 0%; requisições independentes receberam IDs distintos no mesmo worker HTTP. Cobertura adicional de 201, 400, 500 tratado, fallback sem tracer, caminho não reconhecido e restauração/limpeza de MDC inclusive após exceção.
+- Captura do stdout confirmou o formato JSON Logstash efetivo e ausência de corpo, query string e token enviados pelo teste. A árvore de dependências confirmou `micrometer-registry-otlp:1.17.1` vindo do starter OpenTelemetry; endpoint padrão de métricas é independente do endpoint de traces.
+- Nenhum deploy ou acesso ao cluster/Grafana foi realizado. Coleta efetiva, consultas LogQL e cinco chamadas via port-forward dependem de validação em HML após deploy autorizado, conforme [roteiro](http-observability.md).
+
+## Validação inicial
+
 Executada em 2026-10-01, com JDK 25 e Docker Desktop.
 
 - `./mvnw verify`: 21 testes, zero falhas, zero erros e zero ignorados. Inclui Spotless, domínio, aplicação, HTTP, ArchUnit e seis cenários de integração com PostgreSQL 17.6/Flyway.

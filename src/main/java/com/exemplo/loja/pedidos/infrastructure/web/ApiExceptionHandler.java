@@ -1,6 +1,7 @@
 package com.exemplo.loja.pedidos.infrastructure.web;
 
 import com.exemplo.loja.pedidos.core.domain.exception.EstoqueInsuficienteException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -18,7 +19,8 @@ public class ApiExceptionHandler {
   }
 
   @ExceptionHandler(EstoqueInsuficienteException.class)
-  ProblemDetail estoque(Exception e) {
+  ProblemDetail estoque(Exception e, HttpServletRequest request) {
+    request.setAttribute(HttpRequestLoggingFilter.BUSINESS_CODE_ATTRIBUTE, "ESTOQUE_INSUFICIENTE");
     return problem(409, "ESTOQUE_INSUFICIENTE", "Estoque insuficiente para os itens solicitados");
   }
 

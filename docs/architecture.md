@@ -15,3 +15,5 @@ Reserva e criação estão intencionalmente acopladas à mesma transação Postg
 ArchUnit verifica core puro, domínio independente, acesso entre módulos, ausência de ciclos e Estoque sem HTTP. Testes reais verificam rollback após escrita parcial e disputa da última unidade, sem transação automática no teste.
 
 Tracing usa Micrometer Observation, OpenTelemetry e OTLP HTTP para Jaeger. Não há payload em atributos. Spans explícitos: `pedidos.criar`, `estoque.reservar`, `pedidos.persistir`. HTTP é instrumentado pelo Spring. Logs correlacionados seguem auto-configuração do Boot. Exportador assíncrono possui timeout limitado; falha do backend não muda o resultado de negócio.
+
+Na infraestrutura web, `HttpRequestLoggingFilter` registra a conclusão HTTP dentro do escopo da observação do Spring, inclusive após exceções resolvidas pelo advice. O advice anota o código de insuficiência no request, para um único evento com status e motivo. MDC de correlação é restaurado em `finally`; JSON de stdout contém os campos de contexto, sem payload ou URL variável. Detalhes e limites: [observabilidade HTTP](http-observability.md).

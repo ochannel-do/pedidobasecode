@@ -9,6 +9,10 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: validate
+logging:
+  structured:
+    format:
+      console: logstash
 management:
   endpoints:
     web:

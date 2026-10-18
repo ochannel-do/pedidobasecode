@@ -31,8 +31,8 @@ Configuração externa: `DB_URL`, `DB_USER`, `DB_PASSWORD`, `OTLP_ENDPOINT` (OTL
 
 Jaeger: http://localhost:16686, serviço `loja`. Após enviar pedido, procure `POST /pedidos → pedidos.criar → estoque.reservar / pedidos.persistir`. Logs incluem traceId/spanId com contexto ativo. Actuator expõe somente `/actuator/health` e `/actuator/info`; detalhes de health seguem os padrões do Spring.
 
-CI/CD: GitHub Actions verifica testes, cobertura unitária de 90%, sequência TDD, rotas GitFlow e segurança. Merges em `develop`/`master` publicam a imagem aprovada no GHCR e atualizam os manifests de dev/prod na branch `deploy`, acompanhada pelo Argo CD. A instalação do Argo CD e dos ambientes no homelab ainda está pendente; conferir [deploy](k8s/README.md) e [GitFlow/TDD](docs/gitflow.md).
+Logs de stdout usam JSON Logstash. Cada requisição HTTP síncrona emite um evento `http_request_completed` com método, template de caminho, status, duração e `correlationId` (também retornado em `X-Correlation-Id`). Conflitos de estoque incluem `businessCode=ESTOQUE_INSUFICIENTE`, sem stack trace. Diagnóstico, consultas LogQL, métricas OTLP e roteiro de cinco chamadas em HML: [observabilidade HTTP](docs/http-observability.md).
 
-Planejamento: [Kanban GitFlow](https://github.com/users/ochannel-do/projects/1), com tipos Feature, Bug, Refactor, Test, CI/CD e Docs.
+CI: exemplo em GitHub Actions, escolhido como provedor inicial para esta base ainda sem repositório remoto. Antes de implantação, definir autenticação, autorização e infraestrutura de produção no projeto consumidor.
 
 Arquitetura: [limites](docs/architecture.md), [novo módulo](docs/adding-a-module.md), [decisões](docs/decisions/001-base.md). Especificação de origem preservada em `docs/SPEC-BACKEND-BASE.md`.
