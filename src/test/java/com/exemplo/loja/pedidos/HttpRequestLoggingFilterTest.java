@@ -17,6 +17,43 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 class HttpRequestLoggingFilterTest {
   @Test
+  void healthChecksNaoGeramEventosMasPedidosContinuamRegistrados() throws Exception {
+    var filter =
+        new HttpRequestLoggingFilter(
+            new DefaultListableBeanFactory().getBeanProvider(Tracer.class));
+    var logger = (Logger) LoggerFactory.getLogger(HttpRequestLoggingFilter.class);
+    var events = new ListAppender<ILoggingEvent>();
+    events.start();
+    logger.addAppender(events);
+    try {
+      for (String path :
+          new String[] {
+            "/actuator/health",
+            "/actuator/health/",
+            "/actuator/health/liveness",
+            "/actuator/health/readiness"
+          }) {
+        var request = new MockHttpServletRequest("GET", "/loja" + path);
+        request.setContextPath("/loja");
+        var invoked = new java.util.concurrent.atomic.AtomicBoolean();
+        filter.doFilter(request, new MockHttpServletResponse(), (req, res) -> invoked.set(true));
+        assertThat(invoked).isTrue();
+      }
+      assertThat(events.list).isEmpty();
+      for (String path : new String[] {"/pedidos", "/actuator/healthcheck"}) {
+        filter.doFilter(
+            new MockHttpServletRequest("POST", path),
+            new MockHttpServletResponse(),
+            (req, res) -> ((jakarta.servlet.http.HttpServletResponse) res).setStatus(409));
+      }
+      assertThat(events.list).hasSize(2);
+    } finally {
+      logger.detachAppender(events);
+      events.stop();
+    }
+  }
+
+  @Test
   void fallbackELimpezaMesmoComExcecao() throws Exception {
     var filter =
         new HttpRequestLoggingFilter(
